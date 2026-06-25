@@ -26,13 +26,14 @@
     }
   </style>
 </head>
-<body class="bg-stone-950 text-stone-100 min-h-screen antialiased selection:bg-amber-500/30">
+<body class="bg-stone-950 text-stone-100 min-h-screen antialiased">
 
   <div id="root"></div>
 
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    // Securely mapped SVG components with explicitly typed structures
     const Icons = {
       Shirt: () => (
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.38 3.46 16 1.7a2 2 0 0 0-1.42 0l-4.38 1.76a2 2 0 0 1-1.42 0L4.4 1.76A2 2 0 0 0 3 3.52V19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3.52a2 2 0 0 0-.62-1.48z"/><path d="M12 21V13"/></svg>
@@ -65,7 +66,7 @@
     ];
 
     function App() {
-      const apiKey = ""; // Fill if API calls are used
+      const apiKey = ""; 
 
       const [wardrobe, setWardrobe] = useState(() => {
         const saved = localStorage.getItem('chicstack_wardrobe');
@@ -76,7 +77,6 @@
       const [filterCategory, setFilterCategory] = useState('All');
       const [isAddOpen, setIsAddOpen] = useState(false);
       const [uploadedImage, setUploadedImage] = useState(null);
-      const [isScanning, setIsScanning] = useState(false);
 
       const [newItemDetails, setNewItemDetails] = useState({
         name: '', category: 'Top', colorName: 'Black', colorHex: '#000000', style: 'Casual', weather: 'Mild'
@@ -169,7 +169,6 @@
       return (
         <div className="min-h-screen pb-24 max-w-md mx-auto bg-stone-900 shadow-2xl relative border-x border-stone-800">
           
-          {/* Header Banner */}
           <header className="p-4 border-b border-stone-800 bg-stone-900/80 sticky top-0 z-40 backdrop-blur-md flex justify-between items-center">
             <div>
               <h1 className="text-xl font-bold tracking-tight text-stone-100 flex items-center gap-2">
@@ -178,19 +177,16 @@
             </div>
             <button 
               onClick={() => setIsAddOpen(true)}
-              className="p-2 bg-amber-500 text-stone-950 rounded-full font-bold shadow-lg hover:bg-amber-400 active:scale-95 transition"
+              className="p-2 bg-amber-500 text-stone-950 rounded-full font-bold shadow-lg hover:bg-amber-400"
             >
               <Icons.Plus />
             </button>
           </header>
 
-          {/* Context Tab View Workspace */}
           <main className="p-4">
             
-            {/* Tab 1: Wardrobe Grid view */}
             {activeTab === 'wardrobe' && (
               <div>
-                {/* Category Quick Filter Pill Bar */}
                 <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-none mb-4">
                   {['All', 'Top', 'Bottom', 'Outerwear', 'Shoes', 'Accessory'].map(cat => (
                     <button
@@ -207,19 +203,19 @@
 
                 {filteredWardrobe.length === 0 ? (
                   <div className="text-center py-12 text-stone-500 border border-dashed border-stone-800 rounded-xl">
-                    <p>No garments found in {filterCategory}.</p>
+                    <p>No garments found.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-3">
                     {filteredWardrobe.map(item => (
                       <div 
                         key={item.id} 
-                        className={`p-3 rounded-xl bg-stone-800/50 border relative transition group ${
-                          equipped[item.category]?.id === item.id ? 'border-amber-500 ring-1 ring-amber-500' : 'border-stone-800'
+                        className={`p-3 rounded-xl bg-stone-800/50 border relative transition ${
+                          equipped[item.category]?.id === item.id ? 'border-amber-500' : 'border-stone-800'
                         }`}
                       >
                         <div className="w-full h-24 rounded-lg bg-stone-800 mb-2 flex items-center justify-center overflow-hidden">
-                          {item.image.startsWith('data:') ? (
+                          {item.image && item.image.startsWith('data:') ? (
                             <img src={item.image} className="object-cover w-full h-full" alt="" />
                           ) : (
                             <Icons.Shirt />
@@ -231,9 +227,9 @@
                           <div className="flex gap-1">
                             <button 
                               onClick={() => toggleEquip(item)}
-                              className={`p-1 rounded text-[10px] font-bold ${equipped[item.category]?.id === item.id ? 'bg-amber-500 text-stone-950' : 'bg-stone-700 text-stone-300'}`}
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${equipped[item.category]?.id === item.id ? 'bg-amber-500 text-stone-950' : 'bg-stone-700 text-stone-300'}`}
                             >
-                              {equipped[item.category]?.id === item.id ? 'Equipped' : 'Wear'}
+                              {equipped[item.category]?.id === item.id ? 'Worn' : 'Wear'}
                             </button>
                             <button onClick={() => deleteItem(item.id)} className="p-1 text-stone-500 hover:text-red-400">
                               <Icons.Trash2 />
@@ -247,7 +243,6 @@
               </div>
             )}
 
-            {/* Tab 2: Matcher Builder Canvas */}
             {activeTab === 'matcher' && (
               <div className="space-y-4">
                 <div className="bg-stone-800/40 border border-stone-800 rounded-2xl p-4 space-y-3">
@@ -258,7 +253,7 @@
                       {equipped[cat] ? (
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-semibold text-amber-400">{equipped[cat].name}</span>
-                          <button onClick={() => setEquipped(prev => ({ ...prev, [cat]: null }))} className="text-stone-500 hover:text-stone-300">
+                          <button onClick={() => setEquipped(prev => ({ ...prev, [cat]: null }))} className="text-stone-500">
                             <Icons.X />
                           </button>
                         </div>
@@ -269,27 +264,21 @@
                   ))}
                 </div>
                 <button 
-                  onClick={() => triggerModal("AI Coach Sync", "To review combinations live with Gemini, insert your functional Gemini API Key profile descriptor in the engine constants config.")}
-                  className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-bold rounded-xl shadow-lg flex items-center justify-center gap-2"
+                  onClick={() => triggerModal("AI Coach Sync", "To review live configurations with Gemini, update your API connection configurations inside your dashboard pipeline constants.")}
+                  className="w-full py-3 bg-amber-500 text-stone-950 font-bold rounded-xl flex items-center justify-center gap-2"
                 >
                   <Icons.Sparkles /> Analyze Outfit Stack
                 </button>
               </div>
             )}
 
-            {/* Tab 3: Selfie Digital Stylist Rater */}
             {activeTab === 'selfie' && (
               <div className="space-y-4">
                 <div className="border border-dashed border-stone-800 rounded-2xl p-6 text-center bg-stone-900/50">
                   {selfieImage ? (
                     <div className="space-y-4">
-                      <img src={selfieImage} className="max-h-64 mx-auto rounded-xl shadow-md object-cover" alt="Selfie preview" />
-                      <button 
-                        onClick={() => setSelfieImage(null)}
-                        className="text-xs text-red-400 font-medium underline"
-                      >
-                        Remove Photo
-                      </button>
+                      <img src={selfieImage} className="max-h-64 mx-auto rounded-xl object-cover" alt="Selfie" />
+                      <button onClick={() => setSelfieImage(null)} className="text-xs text-red-400 underline">Remove Photo</button>
                     </div>
                   ) : (
                     <div onClick={() => selfieInputRef.current.click()} className="cursor-pointer space-y-2 py-4">
@@ -297,7 +286,6 @@
                         <Icons.Camera />
                       </div>
                       <p className="text-sm font-medium text-stone-300">Snap or Upload Fit Portrait</p>
-                      <p className="text-xs text-stone-500">Camera roll image or mirror selfie</p>
                     </div>
                   )}
                   <input type="file" accept="image/*" ref={selfieInputRef} onChange={handleSelfieUpload} className="hidden" />
@@ -306,7 +294,7 @@
                 <button
                   onClick={simulateSelfieRating}
                   disabled={isAnalyzingSelfie}
-                  className="w-full py-3 bg-stone-100 text-stone-950 font-bold rounded-xl transition disabled:opacity-50"
+                  className="w-full py-3 bg-stone-100 text-stone-950 font-bold rounded-xl disabled:opacity-50"
                 >
                   {isAnalyzingSelfie ? 'Stylist Judges Critiquing...' : 'Submit to Virtual Judges Panel'}
                 </button>
@@ -331,13 +319,12 @@
 
           </main>
 
-          {/* Add Item Bottom Sheet Drawer Sheet Modal */}
           {isAddOpen && (
             <div className="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-sm flex items-end justify-center p-4">
-              <div className="w-full max-w-sm bg-stone-900 border border-stone-800 rounded-t-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto">
+              <div className="w-full max-w-sm bg-stone-900 border border-stone-800 rounded-t-2xl p-5 space-y-4">
                 <div className="flex justify-between items-center">
-                  <h2 className="text-base font-bold text-stone-100">Add New Wardrobe Garment</h2>
-                  <button onClick={() => setIsAddOpen(false)} className="p-1 text-stone-400"><Icons.X /></button>
+                  <h2 className="text-base font-bold text-stone-100">Add New Garment</h2>
+                  <button onClick={() => setIsAddOpen(false)} className="text-stone-400"><Icons.X /></button>
                 </div>
 
                 <div className="border border-dashed border-stone-800 rounded-xl p-4 text-center cursor-pointer bg-stone-950/40" onClick={() => fileInputRef.current.click()}>
@@ -356,8 +343,8 @@
                       type="text" 
                       value={newItemDetails.name} 
                       onChange={e => setNewItemDetails({...newItemDetails, name: e.target.value})} 
-                      className="w-full bg-stone-800 border border-stone-700 rounded-lg p-2 text-stone-100 focus:outline-none focus:border-amber-500"
-                      placeholder="e.g., Linen Vintage Coat"
+                      className="w-full bg-stone-800 border border-stone-700 rounded-lg p-2 text-stone-100 focus:outline-none"
+                      placeholder="e.g., Denim Vintage Jacket"
                     />
                   </div>
 
@@ -373,4 +360,23 @@
                       </select>
                     </div>
                     <div>
-                      <label className="block text-stone-400 font-medium mb-1">Style Segm
+                      <label className="block text-stone-400 font-medium mb-1">Style Segment</label>
+                      <select 
+                        value={newItemDetails.style} 
+                        onChange={e => setNewItemDetails({...newItemDetails, style: e.target.value})}
+                        className="w-full bg-stone-800 border border-stone-700 rounded-lg p-2 text-stone-100 focus:outline-none"
+                      >
+                        {['Casual', 'Formal', 'Streetwear', 'Minimalist'].map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <button onClick={handleAddItem} className="w-full py-2.5 bg-amber-500 text-stone-950 font-bold rounded-lg text-xs">
+                  Save to Closet
+                </button>
+              </div>
+            </div>
+          )}
+
+   
