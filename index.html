@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ChicStack OOTD AI</title>
   
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
   
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="[https://unpkg.com/react@18/umd/react.development.js](https://unpkg.com/react@18/umd/react.development.js)" crossorigin></script>
+  <script src="[https://unpkg.com/react-dom@18/umd/react-dom.development.js](https://unpkg.com/react-dom@18/umd/react-dom.development.js)" crossorigin></script>
+  <script src="[https://unpkg.com/@babel/standalone/babel.min.js](https://unpkg.com/@babel/standalone/babel.min.js)"></script>
 
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="[https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap)" rel="stylesheet">
 
   <style>
     body {
@@ -30,30 +30,29 @@
 
   <div id="root"></div>
 
-  <script type="text/babel">
+  <script type="text/babel" data-presets="env,react">
     const { useState, useEffect, useRef } = React;
 
-    // Securely mapped SVG structural strings
     const ShirtIcon = () => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.38 3.46 16 1.7a2 2 0 0 0-1.42 0l-4.38 1.76a2 2 0 0 1-1.42 0L4.4 1.76A2 2 0 0 0 3 3.52V19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3.52a2 2 0 0 0-.62-1.48z"/><path d="M12 21V13"/></svg>
+      <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.38 3.46 16 1.7a2 2 0 0 0-1.42 0l-4.38 1.76a2 2 0 0 1-1.42 0L4.4 1.76A2 2 0 0 0 3 3.52V19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3.52a2 2 0 0 0-.62-1.48z"/><path d="M12 21V13"/></svg>
     );
     const CameraIcon = () => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+      <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
     );
     const SparklesIcon = () => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+      <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
     );
     const LayersIcon = () => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polygon points="2 17 12 22 22 17"/><polygon points="2 12 12 17 22 12"/></svg>
+      <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polygon points="2 17 12 22 22 17"/><polygon points="2 12 12 17 22 12"/></svg>
     );
     const TrashIcon = () => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+      <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
     );
     const PlusIcon = () => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+      <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
     );
     const XIcon = () => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+      <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
     );
 
     const DEFAULT_WARDROBE = [
@@ -65,8 +64,12 @@
 
     function App() {
       const [wardrobe, setWardrobe] = useState(() => {
-        const saved = localStorage.getItem('chicstack_wardrobe');
-        return saved ? JSON.parse(saved) : DEFAULT_WARDROBE;
+        try {
+          const saved = localStorage.getItem('chicstack_wardrobe');
+          return saved ? JSON.parse(saved) : DEFAULT_WARDROBE;
+        } catch (e) {
+          return DEFAULT_WARDROBE;
+        }
       });
 
       const [activeTab, setActiveTab] = useState('wardrobe'); 
@@ -89,7 +92,7 @@
       const [customModal, setCustomModal] = useState({ isOpen: false, title: '', message: '' });
 
       const triggerModal = (title, message) => {
-        setCustomModal({ isOpen: true, title, message });
+        setCustomModal({ isOpen: true, title: title, message: message });
       };
 
       useEffect(() => {
@@ -105,7 +108,7 @@
         const reader = new FileReader();
         reader.onload = (event) => {
           setUploadedImage(event.target.result);
-          setNewItemDetails(prev => ({ ...prev, name: file.name.split('.')[0] }));
+          setNewItemDetails(prev => Object.assign({}, prev, { name: file.name.split('.')[0] }));
         };
         reader.readAsDataURL(file);
       };
@@ -130,9 +133,11 @@
       };
 
       const toggleEquip = (item) => {
-        setEquipped(prev => ({
-          ...prev,
-          [item.category]: prev[item.category]?.id === item.id ? null : item
+        const currentEquippedInCategory = equipped[item.category];
+        const isCurrentlyEquipped = currentEquippedInCategory && currentEquippedInCategory.id === item.id;
+        
+        setEquipped(prev => Object.assign({}, prev, {
+          [item.category]: isCurrentlyEquipped ? null : item
         }));
       };
 
@@ -205,37 +210,40 @@
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-3">
-                    {filteredWardrobe.map(item => (
-                      <div 
-                        key={item.id} 
-                        className={`p-3 rounded-xl bg-stone-800/50 border relative transition ${
-                          equipped[item.category]?.id === item.id ? 'border-amber-500' : 'border-stone-800'
-                        }`}
-                      >
-                        <div className="w-full h-24 rounded-lg bg-stone-800 mb-2 flex items-center justify-center overflow-hidden text-stone-500">
-                          {item.image ? (
-                            <img src={item.image} className="object-cover w-full h-full" alt="" />
-                          ) : (
-                            <ShirtIcon />
-                          )}
-                        </div>
-                        <h3 className="text-xs font-semibold truncate text-stone-200">{item.name}</h3>
-                        <div className="flex justify-between items-center mt-2">
-                          <span className="text-[10px] text-stone-400 px-1.5 py-0.5 rounded bg-stone-900">{item.category}</span>
-                          <div className="flex gap-1">
-                            <button 
-                              onClick={() => toggleEquip(item)}
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${equipped[item.category]?.id === item.id ? 'bg-amber-500 text-stone-950' : 'bg-stone-700 text-stone-300'}`}
-                            >
-                              {equipped[item.category]?.id === item.id ? 'Worn' : 'Wear'}
-                            </button>
-                            <button onClick={() => deleteItem(item.id)} className="p-1 text-stone-500 hover:text-red-400">
-                              <TrashIcon />
-                            </button>
+                    {filteredWardrobe.map(item => {
+                      const isEquipped = equipped[item.category] && equipped[item.category].id === item.id;
+                      return (
+                        <div 
+                          key={item.id} 
+                          className={`p-3 rounded-xl bg-stone-800/50 border relative transition ${
+                            isEquipped ? 'border-amber-500' : 'border-stone-800'
+                          }`}
+                        >
+                          <div className="w-full h-24 rounded-lg bg-stone-800 mb-2 flex items-center justify-center overflow-hidden text-stone-500">
+                            {item.image ? (
+                              <img src={item.image} className="object-cover w-full h-full" alt="" />
+                            ) : (
+                              <ShirtIcon />
+                            )}
+                          </div>
+                          <h3 className="text-xs font-semibold truncate text-stone-200">{item.name}</h3>
+                          <div className="flex justify-between items-center mt-2">
+                            <span className="text-[10px] text-stone-400 px-1.5 py-0.5 rounded bg-stone-900">{item.category}</span>
+                            <div className="flex gap-1">
+                              <button 
+                                onClick={() => toggleEquip(item)}
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold ${isEquipped ? 'bg-amber-500 text-stone-950' : 'bg-stone-700 text-stone-300'}`}
+                              >
+                                {isEquipped ? 'Worn' : 'Wear'}
+                              </button>
+                              <button onClick={() => deleteItem(item.id)} className="p-1 text-stone-500 hover:text-red-400">
+                                <TrashIcon />
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -251,7 +259,7 @@
                       {equipped[cat] ? (
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-semibold text-amber-400">{equipped[cat].name}</span>
-                          <button onClick={() => setEquipped(prev => ({ ...prev, [cat]: null }))} className="text-stone-500">
+                          <button onClick={() => setEquipped(prev => Object.assign({}, prev, {[cat]: null}))} className="text-stone-500">
                             <XIcon />
                           </button>
                         </div>
@@ -340,7 +348,10 @@
                     <input 
                       type="text" 
                       value={newItemDetails.name} 
-                      onChange={e => setNewItemDetails({...newItemDetails, name: e.target.value})} 
+                      onChange={e => {
+                        const val = e.target.value;
+                        setNewItemDetails(prev => Object.assign({}, prev, { name: val }));
+                      }} 
                       className="w-full bg-stone-800 border border-stone-700 rounded-lg p-2 text-stone-100 focus:outline-none"
                       placeholder="e.g., Denim Vintage Jacket"
                     />
@@ -351,7 +362,10 @@
                       <label className="block text-stone-400 font-medium mb-1">Category Type</label>
                       <select 
                         value={newItemDetails.category} 
-                        onChange={e => setNewItemDetails({...newItemDetails, category: e.target.value})}
+                        onChange={e => {
+                          const val = e.target.value;
+                          setNewItemDetails(prev => Object.assign({}, prev, { category: val }));
+                        }}
                         className="w-full bg-stone-800 border border-stone-700 rounded-lg p-2 text-stone-100 focus:outline-none"
                       >
                         {['Top', 'Bottom', 'Outerwear', 'Shoes', 'Accessory'].map(c => <option key={c} value={c}>{c}</option>)}
@@ -361,26 +375,6 @@
                       <label className="block text-stone-400 font-medium mb-1">Style Segment</label>
                       <select 
                         value={newItemDetails.style} 
-                        onChange={e => setNewItemDetails({...newItemDetails, style: e.target.value})}
-                        className="w-full bg-stone-800 border border-stone-700 rounded-lg p-2 text-stone-100 focus:outline-none"
-                      >
-                        {['Casual', 'Formal', 'Streetwear', 'Minimalist'].map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <button onClick={handleAddItem} className="w-full py-2.5 bg-amber-500 text-stone-950 font-bold rounded-lg text-xs">
-                  Save to Closet
-                </button>
-              </div>
-            </div>
-          )}
-
-          {customModal.isOpen && (
-            <div className="fixed inset-0 z-50 bg-stone-950/70 flex items-center justify-center p-6">
-              <div className="bg-stone-800 border border-stone-700 rounded-2xl p-5 max-w-xs text-center space-y-3">
-                <h3 className="font-bold text-stone-100">{customModal.title}</h3>
-                <p className="text-xs text-stone-400">{customModal.message}</p>
-                <button 
-                  onClick={() => setCustomModal({ ...customModal, isOpen: fals
+                        onChange={e => {
+                          const val = e.target.value;
+            
