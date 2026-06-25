@@ -1,393 +1,349 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ChicStack OOTD AI</title>
+  <title>ChicStack OOTD AI (Live Gemini)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-    .scrollbar-none::-webkit-scrollbar {
-      display: none;
-    }
-    .scrollbar-none {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
   </style>
 </head>
 <body class="bg-stone-950 text-stone-100 min-h-screen antialiased">
 
-  <div id="root"></div>
+  <div class="min-h-screen pb-24 max-w-md mx-auto bg-stone-900 shadow-2xl relative border-x border-stone-800">
+    
+    <header class="p-4 border-b border-stone-800 bg-stone-900/80 sticky top-0 z-40 backdrop-blur-md flex justify-between items-center">
+      <div>
+        <h1 class="text-xl font-bold tracking-tight text-stone-100">ChicStack</h1>
+        <button onclick="manageApiKey()" id="api-status-btn" class="text-[10px] text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full mt-0.5">⚠️ No API Key Configured</button>
+      </div>
+      <button onclick="openAddModal()" class="p-2 bg-amber-500 text-stone-950 rounded-full font-bold shadow-lg hover:bg-amber-400">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+      </button>
+    </header>
 
-  <script type="text/babel" data-presets="react,env">
-    const { useState, useEffect, useRef } = React;
+    <main class="p-4">
+      
+      <div id="tab-wardrobe" class="tab-content active">
+        <div class="flex gap-2 overflow-x-auto pb-3 scrollbar-none mb-4" id="category-filters"></div>
+        <div class="grid grid-cols-2 gap-3" id="closet-grid"></div>
+      </div>
 
-    // Inline SVG Icon Components
-    const ShirtIcon = () => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.38 3.46 16 1.7a2 2 0 0 0-1.42 0l-4.38 1.76a2 2 0 0 1-1.42 0L4.4 1.76A2 2 0 0 0 3 3.52V19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3.52a2 2 0 0 0-.62-1.48z"/><path d="M12 21V13"/></svg>
-    );
-    const CameraIcon = () => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-    );
-    const SparklesIcon = () => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-    );
-    const LayersIcon = () => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polygon points="2 17 12 22 22 17"/><polygon points="2 12 12 17 22 12"/></svg>
-    );
-    const TrashIcon = () => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-    );
-    const PlusIcon = () => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
-    );
-    const XIcon = () => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
-    );
+      <div id="tab-matcher" class="tab-content space-y-4">
+        <div class="bg-stone-800/40 border border-stone-800 rounded-2xl p-4 space-y-3">
+          <h2 class="text-sm font-semibold text-stone-400 tracking-wider uppercase mb-2">Current Stack Workspace</h2>
+          <div id="canvas-slots" class="space-y-3"></div>
+        </div>
+        <button onclick="analyzeCanvasOotd()" id="canvas-ai-btn" class="w-full py-3 bg-amber-500 text-stone-950 font-bold rounded-xl flex items-center justify-center gap-2 transition disabled:opacity-40">
+          ⚡ Analyze Outfit Stack with AI
+        </button>
+        <div id="canvas-ai-result" class="hidden bg-stone-800/50 border border-amber-500/20 rounded-xl p-4 text-xs text-stone-200 leading-relaxed space-y-2"></div>
+      </div>
 
-    const DEFAULT_WARDROBE = [
-      { id: 'mock-1', name: 'Classic Beige Trench', category: 'Outerwear', style: 'Formal' },
-      { id: 'mock-2', name: 'Vintage White Tee', category: 'Top', style: 'Casual' },
-      { id: 'mock-3', name: 'Relaxed Denim Jeans', category: 'Bottom', style: 'Casual' },
-      { id: 'mock-4', name: 'Minimalist Sneakers', category: 'Shoes', style: 'Minimalist' }
+      <div id="tab-selfie" class="tab-content space-y-4">
+        <div class="border border-dashed border-stone-800 rounded-2xl p-6 text-center bg-stone-900/50 cursor-pointer" onclick="document.getElementById('selfie-input').click()">
+          <div id="selfie-preview-placeholder" class="space-y-2 py-4">
+            <div class="mx-auto w-12 h-12 rounded-full bg-stone-800 flex items-center justify-center text-stone-400">📷</div>
+            <p class="text-sm font-medium text-stone-300">Snap or Upload Fit Portrait</p>
+          </div>
+          <img id="selfie-display" class="hidden max-h-64 mx-auto rounded-xl object-cover" alt="Selfie" />
+          <input type="file" id="selfie-input" accept="image/*" class="hidden" onchange="loadSelfie(event)" />
+        </div>
+
+        <button onclick="rateSelfieWithAi()" id="selfie-ai-btn" class="w-full py-3 bg-stone-100 text-stone-950 font-bold rounded-xl disabled:opacity-40">
+          Submit to Gemini Virtual Judges
+        </button>
+
+        <div id="judges-panel" class="hidden bg-stone-800/50 border border-stone-700/60 rounded-xl p-4 text-xs text-stone-200 leading-relaxed space-y-2"></div>
+      </div>
+
+    </main>
+
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-stone-900/90 border-t border-stone-800 backdrop-blur-md grid grid-cols-3 py-2.5 text-stone-400 z-40 shadow-xl">
+      <button onclick="switchTab('wardrobe')" id="nav-wardrobe" class="flex flex-col items-center gap-1 text-[10px] font-semibold text-amber-400"><span>🧥</span> Closet</button>
+      <button onclick="switchTab('matcher')" id="nav-matcher" class="flex flex-col items-center gap-1 text-[10px] font-semibold"><span>🥞</span> OOTD Canvas</button>
+      <button onclick="switchTab('selfie')" id="nav-selfie" class="flex flex-col items-center gap-1 text-[10px] font-semibold"><span>📸</span> Style Rater</button>
+    </nav>
+
+    <div id="add-modal" class="hidden fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-sm flex items-end justify-center p-4">
+      <div class="w-full max-w-sm bg-stone-900 border border-stone-800 rounded-t-2xl p-5 space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-base font-bold text-stone-100">Add New Garment</h2>
+          <button onclick="closeAddModal()" class="text-stone-400">✕</button>
+        </div>
+        <div class="border border-dashed border-stone-800 rounded-xl p-4 text-center cursor-pointer bg-stone-950/40" onclick="document.getElementById('item-img-input').click()">
+          <span id="item-img-placeholder" class="text-xs text-stone-400">Tap to upload clothing snapshot image</span>
+          <img id="item-img-display" class="hidden h-20 mx-auto object-cover rounded" />
+          <input type="file" id="item-img-input" accept="image/*" class="hidden" onchange="loadItemImage(event)">
+        </div>
+        <input type="text" id="item-name" class="w-full bg-stone-800 border border-stone-700 rounded-lg p-2 text-xs" placeholder="e.g., Denim Vintage Jacket">
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <select id="item-category" class="bg-stone-800 border border-stone-700 rounded-lg p-2 text-stone-100">
+            <option>Top</option><option>Bottom</option><option>Outerwear</option><option>Shoes</option><option>Accessory</option>
+          </select>
+          <select id="item-style" class="bg-stone-800 border border-stone-700 rounded-lg p-2 text-stone-100">
+            <option>Casual</option><option>Formal</option><option>Streetwear</option><option>Minimalist</option>
+          </select>
+        </div>
+        <button onclick="saveItem()" class="w-full py-2.5 bg-amber-500 text-stone-950 font-bold rounded-lg text-xs">Save to Closet</button>
+      </div>
+    </div>
+
+    <div id="alert-modal" class="hidden fixed inset-0 z-50 bg-stone-950/70 flex items-center justify-center p-6">
+      <div class="bg-stone-800 border border-stone-700 rounded-2xl p-5 max-w-xs text-center space-y-3">
+        <h3 id="alert-title" class="font-bold text-stone-100"></h3>
+        <p id="alert-msg" class="text-xs text-stone-400"></p>
+        <button onclick="closeAlert()" class="px-4 py-1.5 bg-stone-700 rounded-lg text-xs font-semibold text-stone-200">Got it</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="importmap">
+    { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
+  </script>
+
+  <script type="module">
+    import { GoogleGenerativeAI } from "@google/generative-ai";
+
+    let wardrobe = JSON.parse(localStorage.getItem('chicstack_w')) || [
+      { id: '1', name: 'Classic Beige Trench', category: 'Outerwear', style: 'Formal', image: '' },
+      { id: '2', name: 'Vintage White Tee', category: 'Top', style: 'Casual', image: '' },
+      { id: '3', name: 'Relaxed Denim Jeans', category: 'Bottom', style: 'Casual', image: '' },
+      { id: '4', name: 'Minimalist Sneakers', category: 'Shoes', style: 'Minimalist', image: '' }
     ];
+    let equipped = { Outerwear: null, Top: null, Bottom: null, Shoes: null, Accessory: null };
+    let currentFilter = 'All';
+    let currentItemBase64 = "";
 
-    function App() {
-      const [wardrobe, setWardrobe] = useState(DEFAULT_WARDROBE);
-      const [activeTab, setActiveTab] = useState('wardrobe'); 
-      const [filterCategory, setFilterCategory] = useState('All');
-      const [isAddOpen, setIsAddOpen] = useState(false);
-      const [uploadedImage, setUploadedImage] = useState('');
+    // API Setup
+    let apiKey = localStorage.getItem('chicstack_gemini_key') || "";
+    function checkApiKey() {
+      const btn = document.getElementById('api-status-btn');
+      if (apiKey) {
+        btn.innerText = "🟢 Gemini AI Connected";
+        btn.className = "text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full mt-0.5";
+      } else {
+        btn.innerText = "⚠️ No API Key Configured";
+        btn.className = "text-[10px] text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full mt-0.5";
+      }
+    }
+    window.manageApiKey = () => {
+      const entry = prompt("Please provide your Google AI Studio Gemini API Key:", apiKey);
+      if (entry !== null) {
+        apiKey = entry.trim();
+        localStorage.setItem('chicstack_gemini_key', apiKey);
+        checkApiKey();
+      }
+    };
 
-      const [newItemDetails, setNewItemDetails] = useState({
-        name: '', category: 'Top', style: 'Casual'
-      });
+    // Live AI Execution Logic
+    window.analyzeCanvasOotd = async () => {
+      if (!apiKey) return alert("Please map your Gemini API Key using the status header toggle button first.");
+      
+      let outfitItems = [];
+      for (let cat in equipped) {
+        if (equipped[cat]) outfitItems.push(`${cat}: ${equipped[cat].name} (${equipped[cat].style})`);
+      }
+      if (outfitItems.length === 0) return alert("Dress up at least one workspace item slot on your active canvas first.");
 
-      const [equipped, setEquipped] = useState({
-        Outerwear: null, Top: null, Bottom: null, Shoes: null, Accessory: null
-      });
+      const btn = document.getElementById('canvas-ai-btn');
+      const box = document.getElementById('canvas-ai-result');
+      btn.innerText = "Consulting Gemini Stylist AI...";
+      btn.disabled = true;
+      box.classList.remove('hidden');
+      box.innerText = "Analyzing alignment, color layers, and thematic presentation sync profiles...";
 
-      const [selfieImage, setSelfieImage] = useState('');
-      const [isAnalyzingSelfie, setIsAnalyzingSelfie] = useState(false);
-      const [selfieRating, setSelfieRating] = useState(null);
-      const [customModal, setCustomModal] = useState({ isOpen: false, title: '', message: '' });
-
-      // Run local storage initialization strictly safe after mount
-      useEffect(() => {
-        try {
-          const saved = localStorage.getItem('chicstack_wardrobe');
-          if (saved) {
-            setWardrobe(JSON.parse(saved));
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }, []);
-
-      // Save sync
-      useEffect(() => {
-        try {
-          if (wardrobe !== DEFAULT_WARDROBE) {
-            localStorage.setItem('chicstack_wardrobe', JSON.stringify(wardrobe));
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }, [wardrobe]);
-
-      const fileInputRef = useRef(null);
-      const selfieInputRef = useRef(null);
-
-      const triggerModal = (title, message) => {
-        setCustomModal({ isOpen: true, title: title, message: message });
-      };
-
-      const handleImageUpload = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          setUploadedImage(event.target.result);
-          setNewItemDetails(prev => Object.assign({}, prev, { name: file.name.split('.')[0] }));
-        };
-        reader.readAsDataURL(file);
-      };
-
-      const handleAddItem = () => {
-        if (!newItemDetails.name.trim()) return triggerModal("Missing Name", "Give your item a label!");
-        const newItem = {
-          id: 'item-' + Date.now(),
-          name: newItemDetails.name,
-          category: newItemDetails.category,
-          style: newItemDetails.style,
-          image: uploadedImage || ''
-        };
-        setWardrobe([newItem, ...wardrobe]);
-        setIsAddOpen(false);
-        setUploadedImage('');
-        setNewItemDetails({ name: '', category: 'Top', style: 'Casual' });
-      };
-
-      const deleteItem = (id) => {
-        setWardrobe(wardrobe.filter(item => item.id !== id));
-      };
-
-      const toggleEquip = (item) => {
-        const currentEquippedInCategory = equipped[item.category];
-        const isCurrentlyEquipped = currentEquippedInCategory && currentEquippedInCategory.id === item.id;
+      try {
+        const ai = new GoogleGenerativeAI(apiKey);
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const promptText = `Act as an expert high-fashion stylist. Analyze this chosen combination stack: ${outfitItems.join(', ')}. Give a brief critique, an overall profile compatibility score from 0-100, and 2 quick punchy suggestions to upgrade the style synergy. Keep the reply clean, conversational, formatting with short spacing.`;
         
-        setEquipped(prev => Object.assign({}, prev, {
-          [item.category]: isCurrentlyEquipped ? null : item
-        }));
-      };
+        const response = await model.generateContent(promptText);
+        box.innerText = response.response.text();
+      } catch (err) {
+        box.innerText = "Connection Framework Timeout: Verification pipeline rejected endpoint call. Trace details: " + err.message;
+      } finally {
+        btn.innerText = "⚡ Analyze Outfit Stack with AI";
+        btn.disabled = false;
+      }
+    };
 
-      const handleSelfieUpload = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          setSelfieImage(event.target.result);
-          setSelfieRating(null);
-        };
-        reader.readAsDataURL(file);
-      };
+    window.rateSelfieWithAi = async () => {
+      if (!apiKey) return alert("Please configure your Gemini API Key first.");
+      const displayImg = document.getElementById('selfie-display');
+      if (!displayImg.src || displayImg.classList.contains('hidden')) return alert("Please upload an outfit portrait picture first.");
 
-      const simulateSelfieRating = () => {
-        if (!selfieImage) return triggerModal("No Selfie", "Upload or snap an outfit portrait first.");
-        setIsAnalyzingSelfie(true);
-        setTimeout(() => {
-          setSelfieRating({
-            overallScore: 88,
-            verdict: "Sharp color block sync! The modern clean layout holds excellent urban presence.",
-            suggestions: ["Add a light silver chain accessory", "Try matching with dark-toned trousers"]
-          });
-          setIsAnalyzingSelfie(false);
-        }, 1500);
-      };
+      const btn = document.getElementById('selfie-ai-btn');
+      const panel = document.getElementById('judges-panel');
+      btn.innerText = "AI Fashion Judges deliberating...";
+      btn.disabled = true;
+      panel.classList.remove('hidden');
+      panel.innerText = "Analyzing portrait layout metrics, fit silhouette composition, and styling aesthetic elements...";
 
-      const filteredWardrobe = filterCategory === 'All' 
-        ? wardrobe 
-        : wardrobe.filter(item => item.category === filterCategory);
+      try {
+        const ai = new GoogleGenerativeAI(apiKey);
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        
+        const base64Data = displayImg.src.split(',')[1];
+        const mimeType = displayImg.src.split(';')[0].split(':')[1];
+        
+        const imgPart = { inlineData: { data: base64Data, mimeType: mimeType } };
+        const promptText = "Review this outfit portrait. Be a constructive, smart fashion judge. Give an overall fashion score out of 100, a one-sentence critique summary statement, and two direct improvement suggestions regarding accessories, fitting adjustments, or color balance alternatives.";
 
-      return (
-        <div className="min-h-screen pb-24 max-w-md mx-auto bg-stone-900 shadow-2xl relative border-x border-stone-800">
-          
-          <header className="p-4 border-b border-stone-800 bg-stone-900/80 sticky top-0 z-40 backdrop-blur-md flex justify-between items-center">
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-stone-100">
-                ChicStack <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-mono">OOTD AI</span>
-              </h1>
+        const response = await model.generateContent([promptText, imgPart]);
+        panel.innerText = response.response.text();
+      } catch (err) {
+        panel.innerText = "AI Analysis failed to process structural data content fields. Error metadata: " + err.message;
+      } finally {
+        btn.innerText = "Submit to Gemini Virtual Judges";
+        btn.disabled = false;
+      }
+    };
+
+    // UI View Tab Swappers
+    window.switchTab = (tabId) => {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      document.querySelectorAll('nav button').forEach(el => el.classList.remove('text-amber-400'));
+      document.getElementById('nav-' + tabId).classList.add('text-amber-400');
+    };
+
+    window.setFilter = (cat) => { currentFilter = cat; renderFilters(); renderCloset(); };
+
+    function renderFilters() {
+      const cats = ['All', 'Top', 'Bottom', 'Outerwear', 'Shoes', 'Accessory'];
+      document.getElementById('category-filters').innerHTML = cats.map(c => `
+        <button onclick="setFilter('${c}')" class="px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${currentFilter === c ? 'bg-amber-500 text-stone-950' : 'bg-stone-800 text-stone-400'}">${c}</button>
+      `).join('');
+    }
+
+    function renderCloset() {
+      const grid = document.getElementById('closet-grid');
+      const filtered = currentFilter === 'All' ? wardrobe : wardrobe.filter(i => i.category === currentFilter);
+      
+      if(filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-2 text-center py-12 text-stone-500 text-xs">No elements inside category.</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(item => {
+        const isEquipped = equipped[item.category] && equipped[item.category].id === item.id;
+        return `
+          <div class="p-3 rounded-xl bg-stone-800/50 border ${isEquipped ? 'border-amber-500' : 'border-stone-800'} relative">
+            <div class="w-full h-24 rounded-lg bg-stone-800 mb-2 flex items-center justify-center overflow-hidden text-stone-500">
+              ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover" />` : `👚`}
             </div>
-            <button 
-              onClick={() => setIsAddOpen(true)}
-              className="p-2 bg-amber-500 text-stone-950 rounded-full font-bold shadow-lg hover:bg-amber-400"
-            >
-              <PlusIcon />
-            </button>
-          </header>
-
-          <main className="p-4">
-            
-            {activeTab === 'wardrobe' && (
-              <div>
-                <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-none mb-4">
-                  {['All', 'Top', 'Bottom', 'Outerwear', 'Shoes', 'Accessory'].map(cat => (
-                    <button
-                      key={cat}
-                      onClick={() => setFilterCategory(cat)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${
-                        filterCategory === cat ? 'bg-amber-500 text-stone-950' : 'bg-stone-800 text-stone-400'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-
-                {filteredWardrobe.length === 0 ? (
-                  <div className="text-center py-12 text-stone-500 border border-dashed border-stone-800 rounded-xl">
-                    <p>No garments found.</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-3">
-                    {filteredWardrobe.map(item => {
-                      const isEquipped = equipped[item.category] && equipped[item.category].id === item.id;
-                      return (
-                        <div 
-                          key={item.id} 
-                          className={`p-3 rounded-xl bg-stone-800/50 border relative transition ${
-                            isEquipped ? 'border-amber-500' : 'border-stone-800'
-                          }`}
-                        >
-                          <div className="w-full h-24 rounded-lg bg-stone-800 mb-2 flex items-center justify-center overflow-hidden text-stone-500">
-                            {item.image ? (
-                              <img src={item.image} className="object-cover w-full h-full" alt="" />
-                            ) : (
-                              <ShirtIcon />
-                            )}
-                          </div>
-                          <h3 className="text-xs font-semibold truncate text-stone-200">{item.name}</h3>
-                          <div className="flex justify-between items-center mt-2">
-                            <span className="text-[10px] text-stone-400 px-1.5 py-0.5 rounded bg-stone-900">{item.category}</span>
-                            <div className="flex gap-1">
-                              <button 
-                                onClick={() => toggleEquip(item)}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold ${isEquipped ? 'bg-amber-500 text-stone-950' : 'bg-stone-700 text-stone-300'}`}
-                              >
-                                {isEquipped ? 'Worn' : 'Wear'}
-                              </button>
-                              <button onClick={() => deleteItem(item.id)} className="p-1 text-stone-500 hover:text-red-400">
-                                <TrashIcon />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+            <h3 class="text-xs font-semibold truncate text-stone-200">${item.name}</h3>
+            <div class="flex justify-between items-center mt-2">
+              <span class="text-[10px] text-stone-400 px-1.5 py-0.5 rounded bg-stone-900">${item.category}</span>
+              <div class="flex gap-1">
+                <button onclick="toggleEquip('${item.id}')" class="px-2 py-0.5 rounded text-[10px] font-bold ${isEquipped ? 'bg-amber-500 text-stone-950' : 'bg-stone-700 text-stone-300'}">${isEquipped ? 'Worn' : 'Wear'}</button>
+                <button onclick="deleteItem('${item.id}')" class="text-stone-500 text-xs hover:text-red-400">🗑️</button>
               </div>
-            )}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
 
-            {activeTab === 'matcher' && (
-              <div className="space-y-4">
-                <div className="bg-stone-800/40 border border-stone-800 rounded-2xl p-4 space-y-3">
-                  <h2 className="text-sm font-semibold text-stone-400 tracking-wider uppercase mb-2">Current Stack Workspace</h2>
-                  {['Outerwear', 'Top', 'Bottom', 'Shoes', 'Accessory'].map(cat => (
-                    <div key={cat} className="flex items-center justify-between p-3 rounded-xl bg-stone-900 border border-stone-800">
-                      <span className="text-xs text-stone-400 font-medium">{cat}</span>
-                      {equipped[cat] ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-amber-400">{equipped[cat].name}</span>
-                          <button onClick={() => setEquipped(prev => Object.assign({}, prev, {[cat]: null}))} className="text-stone-500">
-                            <XIcon />
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-stone-600 italic">Empty Slot</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <button 
-                  onClick={() => triggerModal("AI Coach Sync", "To review live configurations with Gemini, update your API connection configurations inside your dashboard pipeline constants.")}
-                  className="w-full py-3 bg-amber-500 text-stone-950 font-bold rounded-xl flex items-center justify-center gap-2"
-                >
-                  <SparklesIcon /> Analyze Outfit Stack
-                </button>
-              </div>
-            )}
+    function renderCanvas() {
+      const container = document.getElementById('canvas-slots');
+      const slots = ['Outerwear', 'Top', 'Bottom', 'Shoes', 'Accessory'];
+      container.innerHTML = slots.map(s => `
+        <div class="flex items-center justify-between p-3 rounded-xl bg-stone-900 border border-stone-800">
+          <span class="text-xs text-stone-400 font-medium">${s}</span>
+          ${equipped[s] ? `
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-amber-400">${equipped[s].name}</span>
+              <button onclick="removeSlot('${s}')" class="text-stone-500 text-xs">✕</button>
+            </div>
+          ` : `<span class="text-xs text-stone-600 italic">Empty Slot</span>`}
+        </div>
+      `).join('');
+    }
 
-            {activeTab === 'selfie' && (
-              <div className="space-y-4">
-                <div className="border border-dashed border-stone-800 rounded-2xl p-6 text-center bg-stone-900/50">
-                  {selfieImage ? (
-                    <div className="space-y-4">
-                      <img src={selfieImage} className="max-h-64 mx-auto rounded-xl object-cover" alt="Selfie" />
-                      <button onClick={() => setSelfieImage('')} className="text-xs text-red-400 underline">Remove Photo</button>
-                    </div>
-                  ) : (
-                    <div onClick={() => selfieInputRef.current.click()} className="cursor-pointer space-y-2 py-4">
-                      <div className="mx-auto w-12 h-12 rounded-full bg-stone-800 flex items-center justify-center text-stone-400">
-                        <CameraIcon />
-                      </div>
-                      <p className="text-sm font-medium text-stone-300">Snap or Upload Fit Portrait</p>
-                    </div>
-                  )}
-                  <input type="file" accept="image/*" ref={selfieInputRef} onChange={handleSelfieUpload} className="hidden" />
-                </div>
+    window.toggleEquip = (id) => {
+      const item = wardrobe.find(i => i.id === id);
+      equipped[item.category] = (equipped[item.category] && equipped[item.category].id === item.id) ? null : item;
+      renderCloset(); renderCanvas();
+    };
 
-                <button
-                  onClick={simulateSelfieRating}
-                  disabled={isAnalyzingSelfie}
-                  className="w-full py-3 bg-stone-100 text-stone-950 font-bold rounded-xl disabled:opacity-50"
-                >
-                  {isAnalyzingSelfie ? 'Stylist Judges Critiquing...' : 'Submit to Virtual Judges Panel'}
-                </button>
+    window.removeSlot = (slot) => { equipped[slot] = null; renderCloset(); renderCanvas(); };
+    
+    window.deleteItem = (id) => {
+      const item = wardrobe.find(i => i.id === id);
+      if(equipped[item.category] && equipped[item.category].id === id) equipped[item.category] = null;
+      wardrobe = wardrobe.filter(i => i.id !== id);
+      localStorage.setItem('chicstack_w', JSON.stringify(wardrobe));
+      renderCloset(); renderCanvas();
+    };
 
-                {selfieRating && (
-                  <div className="bg-stone-800/50 border border-stone-700/60 rounded-xl p-4 space-y-3">
-                    <div className="flex justify-between items-center">
-                      <h3 className="font-bold text-stone-200">Judges Statement Score</h3>
-                      <span className="text-lg font-black text-amber-400">{selfieRating.overallScore}/100</span>
-                    </div>
-                    <p className="text-xs text-stone-300 italic">"{selfieRating.verdict}"</p>
-                    <div className="pt-2 border-t border-stone-700/50">
-                      <h4 className="text-xs font-semibold text-amber-400 mb-1">Stylist Action Targets:</h4>
-                      <ul className="list-disc pl-4 text-xs text-stone-400 space-y-1">
-                        {selfieRating.suggestions.map((s, i) => <li key={i}>{s}</li>)}
-                      </ul>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+    // Modal helpers
+    window.openAddModal = () => { document.getElementById('add-modal').classList.remove('hidden'); };
+    window.closeAddModal = () => { 
+      document.getElementById('add-modal').classList.add('hidden');
+      document.getElementById('item-img-placeholder').classList.remove('hidden');
+      document.getElementById('item-img-display').classList.add('hidden');
+      currentItemBase64 = "";
+    };
+    
+    window.loadItemImage = (e) => {
+      const file = e.target.files[0];
+      if(!file) return;
+      const r = new FileReader();
+      r.onload = (event) => {
+        currentItemBase64 = event.target.result;
+        document.getElementById('item-img-placeholder').classList.add('hidden');
+        const img = document.getElementById('item-img-display');
+        img.src = currentItemBase64;
+        img.classList.remove('hidden');
+        document.getElementById('item-name').value = file.name.split('.')[0];
+      };
+      r.readAsDataURL(file);
+    };
 
-          </main>
+    window.saveItem = () => {
+      const name = document.getElementById('item-name').value;
+      const category = document.getElementById('item-category').value;
+      const style = document.getElementById('item-style').value;
+      if(!name.trim()) return alert("Add an item label first.");
+      
+      wardrobe.unshift({ id: 'item-' + Date.now(), name, category, style, image: currentItemBase64 });
+      localStorage.setItem('chicstack_w', JSON.stringify(wardrobe));
+      document.getElementById('item-name').value = '';
+      closeAddModal(); renderCloset();
+    };
 
-          {isAddOpen && (
-            <div className="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-sm flex items-end justify-center p-4">
-              <div className="w-full max-w-sm bg-stone-900 border border-stone-800 rounded-t-2xl p-5 space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-base font-bold text-stone-100">Add New Garment</h2>
-                  <button onClick={() => setIsAddOpen(false)} className="text-stone-400"><XIcon /></button>
-                </div>
+    window.loadSelfie = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        document.getElementById('selfie-preview-placeholder').classList.add('hidden');
+        const img = document.getElementById('selfie-display');
+        img.src = ev.target.result;
+        img.classList.remove('hidden');
+        document.getElementById('judges-panel').classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    };
 
-                <div className="border border-dashed border-stone-800 rounded-xl p-4 text-center cursor-pointer bg-stone-950/40" onClick={() => fileInputRef.current.click()}>
-                  {uploadedImage ? (
-                    <img src={uploadedImage} className="h-20 mx-auto rounded object-cover" alt="" />
-                  ) : (
-                    <p className="text-xs text-stone-400">Tap to upload image snapshot</p>
-                  )}
-                  <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <div>
-                    <label className="block text-stone-400 font-medium mb-1">Item Title Label</label>
-                    <input 
-                      type="text" 
-                      value={newItemDetails.name} 
-                      onChange={e => {
-                        const val = e.target.value;
-                        setNewItemDetails(prev => Object.assign({}, prev, { name: val }));
-                      }} 
-                      className="w-full bg-stone-800 border border-stone-700 rounded-lg p-2 text-stone-100 focus:outline-none"
-                      placeholder="e.g., Denim Vintage Jacket"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-stone-400 font-medium mb-1">Category Type</label>
-                      <select 
-                        value={newItemDetails.category} 
-                        onChange={e => {
-                          const val = e.target.value;
-                          setNewItemDetails(prev => Object.assign({}, prev, { category: val }));
-                        }}
-                        className="w-full bg-stone-800 border border-stone-700 rounded-lg p-2 text-stone-100 focus:outline-none"
-                      >
-                        {['Top', 'Bottom', 'Outerwear', 'Shoes', 'Accessory'].map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-stone-400 font-medium mb-1">Style Segment</label>
-                      <select 
-                        value={newItemDetails.style} 
-                        onChange={e => {
-                          const val = e.target.value;
-                          setNewItemDetails(prev => Object.assign({}, prev, { style: val }));
-                        }}
-                        className="w-full bg-stone-800 border border-stone-700 rounded-lg p-2 t
+    // Initialize layout
+    checkApiKey();
+    renderFilters();
+    renderCloset();
+    renderCanvas();
+  </script>
+</body>
+</html>
