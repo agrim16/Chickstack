@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ChicStack OOTD AI (Live Gemini)</title>
+  <title>ChicStack OOTD AI</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -22,14 +21,22 @@
 
   <div class="min-h-screen pb-24 max-w-md mx-auto bg-stone-900 shadow-2xl relative border-x border-stone-800">
     
-    <header class="p-4 border-b border-stone-800 bg-stone-900/80 sticky top-0 z-40 backdrop-blur-md flex justify-between items-center">
-      <div>
-        <h1 class="text-xl font-bold tracking-tight text-stone-100">ChicStack</h1>
-        <button onclick="manageApiKey()" id="api-status-btn" class="text-[10px] text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full mt-0.5">⚠️ No API Key Configured</button>
+    <header class="p-4 border-b border-stone-800 bg-stone-900/80 sticky top-0 z-40 backdrop-blur-md flex flex-col gap-3">
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-stone-100">ChicStack</h1>
+          <button onclick="manageApiKey()" id="api-status-btn" class="text-[10px] text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full mt-0.5">⚠️ No API Key Configured</button>
+        </div>
+        <button onclick="openAddModal()" class="p-2 bg-amber-500 text-stone-950 rounded-full font-bold shadow-lg hover:bg-amber-400">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+        </button>
       </div>
-      <button onclick="openAddModal()" class="p-2 bg-amber-500 text-stone-950 rounded-full font-bold shadow-lg hover:bg-amber-400">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
-      </button>
+
+      <div class="flex items-center gap-2 bg-stone-950/50 p-2 rounded-xl border border-stone-800/60">
+        <span class="text-xs text-stone-400 font-medium pl-1">Profile:</span>
+        <select id="profile-select" onchange="handleProfileChange(this)" class="bg-stone-800 text-amber-400 text-xs font-semibold rounded-lg p-1.5 flex-1 focus:outline-none border border-stone-700">
+          </select>
+      </div>
     </header>
 
     <main class="p-4">
@@ -99,14 +106,6 @@
       </div>
     </div>
 
-    <div id="alert-modal" class="hidden fixed inset-0 z-50 bg-stone-950/70 flex items-center justify-center p-6">
-      <div class="bg-stone-800 border border-stone-700 rounded-2xl p-5 max-w-xs text-center space-y-3">
-        <h3 id="alert-title" class="font-bold text-stone-100"></h3>
-        <p id="alert-msg" class="text-xs text-stone-400"></p>
-        <button onclick="closeAlert()" class="px-4 py-1.5 bg-stone-700 rounded-lg text-xs font-semibold text-stone-200">Got it</button>
-      </div>
-    </div>
-
   </div>
 
   <script type="importmap">
@@ -116,18 +115,70 @@
   <script type="module">
     import { GoogleGenerativeAI } from "@google/generative-ai";
 
-    let wardrobe = JSON.parse(localStorage.getItem('chicstack_w')) || [
-      { id: '1', name: 'Classic Beige Trench', category: 'Outerwear', style: 'Formal', image: '' },
-      { id: '2', name: 'Vintage White Tee', category: 'Top', style: 'Casual', image: '' },
-      { id: '3', name: 'Relaxed Denim Jeans', category: 'Bottom', style: 'Casual', image: '' },
-      { id: '4', name: 'Minimalist Sneakers', category: 'Shoes', style: 'Minimalist', image: '' }
-    ];
+    // Core Profile Management Configurations
+    let profiles = JSON.parse(localStorage.getItem('chicstack_profiles')) || ['Default Profile'];
+    let currentProfile = localStorage.getItem('chicstack_current_profile') || 'Default Profile';
+
+    let wardrobe = [];
     let equipped = { Outerwear: null, Top: null, Bottom: null, Shoes: null, Accessory: null };
     let currentFilter = 'All';
     let currentItemBase64 = "";
-
-    // API Setup
     let apiKey = localStorage.getItem('chicstack_gemini_key') || "";
+
+    // Load active profile data structure dynamically
+    function loadProfileData() {
+      const storageKey = `chicstack_w_${currentProfile.replace(/\s+/g, '_')}`;
+      wardrobe = JSON.parse(localStorage.getItem(storageKey)) || getStarterPack();
+      equipped = { Outerwear: null, Top: null, Bottom: null, Shoes: null, Accessory: null };
+      
+      renderProfileDropdown();
+      renderFilters();
+      renderCloset();
+      renderCanvas();
+    }
+
+    function saveProfileData() {
+      const storageKey = `chicstack_w_${currentProfile.replace(/\s+/g, '_')}`;
+      localStorage.setItem(storageKey, JSON.stringify(wardrobe));
+    }
+
+    function getStarterPack() {
+      return [
+        { id: '1', name: 'Classic Beige Trench', category: 'Outerwear', style: 'Formal', image: '' },
+        { id: '2', name: 'Vintage White Tee', category: 'Top', style: 'Casual', image: '' },
+        { id: '3', name: 'Relaxed Denim Jeans', category: 'Bottom', style: 'Casual', image: '' },
+        { id: '4', name: 'Minimalist Sneakers', category: 'Shoes', style: 'Minimalist', image: '' }
+      ];
+    }
+
+    function renderProfileDropdown() {
+      const select = document.getElementById('profile-select');
+      let optionsHTML = profiles.map(p => `<option value="${p}" ${p === currentProfile ? 'selected' : ''}>${p}</option>`).join('');
+      optionsHTML += `<option value="__NEW__">＋ Create New Profile...</option>`;
+      select.innerHTML = optionsHTML;
+    }
+
+    window.handleProfileChange = (selectElement) => {
+      const value = selectElement.value;
+      if (value === '__NEW__') {
+        const name = prompt("Enter a name for the new profile:");
+        if (name && name.trim()) {
+          const profileName = name.trim();
+          if (!profiles.includes(profileName)) {
+            profiles.push(profileName);
+            localStorage.setItem('chicstack_profiles', JSON.stringify(profiles));
+          }
+          currentProfile = profileName;
+          localStorage.setItem('chicstack_current_profile', currentProfile);
+        }
+      } else {
+        currentProfile = value;
+        localStorage.setItem('chicstack_current_profile', currentProfile);
+      }
+      loadProfileData();
+    };
+
+    // API Handling
     function checkApiKey() {
       const btn = document.getElementById('api-status-btn');
       if (apiKey) {
@@ -138,6 +189,7 @@
         btn.className = "text-[10px] text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full mt-0.5";
       }
     }
+
     window.manageApiKey = () => {
       const entry = prompt("Please provide your Google AI Studio Gemini API Key:", apiKey);
       if (entry !== null) {
@@ -167,12 +219,12 @@
       try {
         const ai = new GoogleGenerativeAI(apiKey);
         const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const promptText = `Act as an expert high-fashion stylist. Analyze this chosen combination stack: ${outfitItems.join(', ')}. Give a brief critique, an overall profile compatibility score from 0-100, and 2 quick punchy suggestions to upgrade the style synergy. Keep the reply clean, conversational, formatting with short spacing.`;
+        const promptText = `Act as an expert high-fashion stylist. Analyze this chosen combination stack for a profile named ${currentProfile}: ${outfitItems.join(', ')}. Give a brief critique, an overall profile compatibility score from 0-100, and 2 quick punchy suggestions to upgrade the style synergy. Keep the reply clean and conversational.`;
         
         const response = await model.generateContent(promptText);
         box.innerText = response.response.text();
       } catch (err) {
-        box.innerText = "Connection Framework Timeout: Verification pipeline rejected endpoint call. Trace details: " + err.message;
+        box.innerText = "Connection Framework Timeout: " + err.message;
       } finally {
         btn.innerText = "⚡ Analyze Outfit Stack with AI";
         btn.disabled = false;
@@ -199,19 +251,19 @@
         const mimeType = displayImg.src.split(';')[0].split(':')[1];
         
         const imgPart = { inlineData: { data: base64Data, mimeType: mimeType } };
-        const promptText = "Review this outfit portrait. Be a constructive, smart fashion judge. Give an overall fashion score out of 100, a one-sentence critique summary statement, and two direct improvement suggestions regarding accessories, fitting adjustments, or color balance alternatives.";
+        const promptText = "Review this outfit portrait. Be a constructive, smart fashion judge. Give an overall fashion score out of 100, a one-sentence critique summary statement, and two direct improvement suggestions.";
 
         const response = await model.generateContent([promptText, imgPart]);
         panel.innerText = response.response.text();
       } catch (err) {
-        panel.innerText = "AI Analysis failed to process structural data content fields. Error metadata: " + err.message;
+        panel.innerText = "AI Analysis failed to process layout: " + err.message;
       } finally {
         btn.innerText = "Submit to Gemini Virtual Judges";
         btn.disabled = false;
       }
     };
 
-    // UI View Tab Swappers
+    // UI Tab Navigation Controls
     window.switchTab = (tabId) => {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.getElementById('tab-' + tabId).classList.add('active');
@@ -233,7 +285,7 @@
       const filtered = currentFilter === 'All' ? wardrobe : wardrobe.filter(i => i.category === currentFilter);
       
       if(filtered.length === 0) {
-        grid.innerHTML = `<div class="col-span-2 text-center py-12 text-stone-500 text-xs">No elements inside category.</div>`;
+        grid.innerHTML = `<div class="col-span-2 text-center py-12 text-stone-500 text-xs">No garments inside this category.</div>`;
         return;
       }
 
@@ -285,11 +337,11 @@
       const item = wardrobe.find(i => i.id === id);
       if(equipped[item.category] && equipped[item.category].id === id) equipped[item.category] = null;
       wardrobe = wardrobe.filter(i => i.id !== id);
-      localStorage.setItem('chicstack_w', JSON.stringify(wardrobe));
+      saveProfileData();
       renderCloset(); renderCanvas();
     };
 
-    // Modal helpers
+    // Modal Helpers
     window.openAddModal = () => { document.getElementById('add-modal').classList.remove('hidden'); };
     window.closeAddModal = () => { 
       document.getElementById('add-modal').classList.add('hidden');
@@ -320,7 +372,7 @@
       if(!name.trim()) return alert("Add an item label first.");
       
       wardrobe.unshift({ id: 'item-' + Date.now(), name, category, style, image: currentItemBase64 });
-      localStorage.setItem('chicstack_w', JSON.stringify(wardrobe));
+      saveProfileData();
       document.getElementById('item-name').value = '';
       closeAddModal(); renderCloset();
     };
@@ -333,17 +385,4 @@
         document.getElementById('selfie-preview-placeholder').classList.add('hidden');
         const img = document.getElementById('selfie-display');
         img.src = ev.target.result;
-        img.classList.remove('hidden');
-        document.getElementById('judges-panel').classList.add('hidden');
-      };
-      reader.readAsDataURL(file);
-    };
-
-    // Initialize layout
-    checkApiKey();
-    renderFilters();
-    renderCloset();
-    renderCanvas();
-  </script>
-</body>
-</html>
+        img.classList.remove('hidde
